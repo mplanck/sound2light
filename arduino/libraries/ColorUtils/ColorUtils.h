@@ -1,7 +1,8 @@
+// Utilities for color correcting float inputs into a perceptively linear space
+
 #ifndef _COLOR_UTILS
 #define _COLOR_UTILS
 
-// Utilities for color correcting float inputs into a perceptively linear space
 
 // ------------------------------------------------------------------------
 // STRUCTS

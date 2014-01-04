@@ -32,17 +32,21 @@
 #include <ColorUtils.h>
 #include <TCLUtils.h>
 
-// Handy library functions for printing strings to serial when in 
-// DEBUG_MODE (included)
+// Handy open source library functions for printing strings to serial without bloating
+// the variable memory stack
+// more info: 
+// https://github.com/mpflaga/Arduino-MemoryFree.git
+
 #include <MemoryFree.h>
 #include <pgmStrToRAM.h>
 
 // When in debug mode, assume a handshake has taken place and arduino
-// is receiving color
-#define DEBUG_MODE 0
+// is receiving color.
+#define DEBUG_COLOR_SENDING_MODE 0
 
-// Also turn down the baud rate so we don't blast the serial port
-#if DEBUG_MODE
+// Also while in debug mode, turn down the baud rate so we don't blast the 
+// serial port
+#if DEBUG_COLOR_SENDING_MODE
 #define BAUD_RATE 9600
 #else
 #define BAUD_RATE 115200
@@ -96,7 +100,7 @@ void setup() {
               
     global_num_color_bytes = 0;
 
-#if DEBUG_MODE
+#if DEBUG_COLOR_SENDING_MODE
       global_handshake.handshakeMade = true;
       global_handshake.programName = getPSTR("DEBUG MODE");
       global_handshake.receivingColor = true;
@@ -142,9 +146,9 @@ void loop() {
     }              
     global_num_color_bytes = 0;
     
-#if DEBUG_MODE
+#if DEBUG_COLOR_SENDING_MODE
       global_handshake.handshakeMade = true;
-      global_handshake.programName = getPSTR("DEBUG MODE");
+      global_handshake.programName = getPSTR("DEBUG COLOR SENDING MODE");
       global_handshake.receivingColor = true;
 #endif 
     
@@ -176,12 +180,13 @@ void loop() {
           if (Serial.available()) {
 
               unsigned char headByte = Serial.read();
-              // The '*' char is special to indicate the beginning of a frame
-              // of data.  So only process the serial data that follows a '*'.
-              // I chose the '*' char arbitrarily, but I did want it to be in
-              // the lower half of the 256 number range since the lights do
-              // not have a lot of range with lower byte values.  So you won't
-              // be able to tell the difference between 42, 43 or 41 
+              // The '*' char is special to indicate the beginning of a frame of
+              // data.  So only process the serial data that follows a '*'. I
+              // chose the '*' char arbitrarily (or did I fellow hitchhikers!?),
+              // but I did want it to be in the lower half of the 256 number
+              // range since the lights do not have a lot of range with lower
+              // byte values.  So you won't be able to tell the difference
+              // between 42 or 43.
               if (headByte == 42) {
 
                 global_num_color_bytes = Serial.readBytes(global_color_bytes, 
@@ -204,8 +209,6 @@ void loop() {
                       float(bchannel)/255.0 
                     };
 
-                    // This sends the Color struct down the TLC controller
-                    // pipe.  
                     sendColor(outColor);
                   }
                   
@@ -245,7 +248,7 @@ void loop() {
 
     } else {    
 
-      // 3. If there is a known error, cycle the error loop
+      // 3. OR if there is a known error, cycle the error loop
       errorLoop();
     }
   }

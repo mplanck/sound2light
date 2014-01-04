@@ -1,3 +1,8 @@
+// A handful of generic functions to perform string manipulation.  These 
+// functions are extremely limited right now to avoid bloating the stack
+// memory on the arduino.  So if you want to expand capability, you'll need
+// to up the maximum number of strings.
+
 #ifndef _STRING_UTILS
 #define _STRING_UTILS
 
@@ -11,6 +16,8 @@ struct StringArray {
     int numStrings;
 };
 
+// Used to count the characters in the input that match the given
+// char
 int CountChars(String input, 
                char c)
 {
@@ -21,13 +28,16 @@ int CountChars(String input,
     while (index > -1) {
         index = input.indexOf(c, index);
         if(index > -1) {
-          index+=1; // skip over the c we just accounted for
+          index+=1; // skip over the char we just accounted for
           returnValue+=1;
         }
     }
 
     return returnValue;
 }
+
+// Tokenize a string object into a StringArray struct.  This is limited to
+// the maximum number of string objects a StringArray can contain.
 
 StringArray StringTokenize(String input, char delimiter)
 {
