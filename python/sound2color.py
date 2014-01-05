@@ -7,7 +7,7 @@ import time
 import math
 import curses
 
-# requires pyo
+# requires pyo: https://code.google.com/p/pyo/
 from pyo import *
 
 # ------------------------------------------------------------------------
@@ -83,6 +83,21 @@ def aquablueramp(val):
 # into a 50 color array.  This 50 color array is abstract in this class but
 # can be pushed out to a light display by implementing output().
 
+# Key functions:
+#   start(outputAudio=True or False) :
+#     Called to start the audio server as well as create audio signal processing
+#     objects that can be used in update.
+#     If outputAudio is set to True, then we pipe the input audio to the output
+#     speakers of the current computer.
+#
+#   shutdown( ):
+#     Called to properly close down the audio server.  Can be inherited to add
+#     additional objects to shutdown.  Shutdown should be called in a try:finally
+#     block.
+
+#   update( ):
+#     Called at each time step to update the internal color array state based on
+#     the state of the audio server.  update is where the beat detection happen.
 class SoundToColorProcessor(object):
 
     NUM_FREQUENCY_BANDS = 16

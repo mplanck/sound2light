@@ -188,7 +188,7 @@ void resetHandshake(HandShakeProtocol* protocol)
 //     name as the arduino knows it and whether or not the requesting
 //     program and the arduino are in a successful handshake.
 //
-//   * returns tcl:handshakeconfirmed:<program name>\n
+//   * returns "tcl:handshakeconfirmed:1 or 0\ntcl:handshakeprogram:<program name>\n"
 
 //   - tcl:colorbegin!
 
@@ -203,9 +203,11 @@ void resetHandshake(HandShakeProtocol* protocol)
 
 //  So to behave as a valid TLC python program, you need to send the
 //  following serial messages:
-//  "tcl:handexteded:<program name>!"
+//  "tcl:handextended:<program name>!"
 //  "tcl:handreceived:<program name>!"
 //  "tcl:colorbegin!"
+//  and then you can send color data as 3*NUM_LEDS bytes (3 bytes for red green and
+//  blue channel).  You need to proceed the frame of bytes with a '*' char
 
 void processSerialInstruction(HandShakeProtocol* handshake)
 {

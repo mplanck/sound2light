@@ -2,11 +2,13 @@
 
 import sound2color
 
-import serial
 import time
 import sys
 import numpy
 import math
+
+# requires pyserial: http://pyserial.sourceforge.net/
+import serial
 
 # ------------------------------------------------------------------------
 # TCLSerial CLASSES
@@ -25,10 +27,25 @@ class TCLSerialOutput(object):
 # Class used to manage the serial connection.  Used for sending and 
 # receiving messages.
 
+#   Valid messages to send (and corresponding responses):
+#    - tcl:handextended:<program name>!
+#    -- response: tcl:handreceived:<program name>\n
+
+#    - tcl:handreceived:<program name>!
+#    -- response: tcl:handshakeconfirmed:<program name>\n
+
+#    - tcl:status!
+#    -- response: tcl:handshakeconfirmed:1 or 0\ntcl:handshakeprogram:<program name>\n
+
+#    - tcl:colorbegin!
+#    -- response: tcl:colorbeginreceived:<program name>\n
+
 class TCLSerialManager(object):
     
     def __init__(self, serialConnection):
         self.sconnect    = serialConnection
+
+
 
     def _FormatMessage(self, instruction, args):
 
@@ -39,6 +56,8 @@ class TCLSerialManager(object):
 
         msg += "!"
         return msg
+
+
 
     def SendMessage(self, instruction, args=""):
 
@@ -57,6 +76,7 @@ class TCLSerialManager(object):
         self.sconnect.flush()
         return True
 
+
     def SendColorBytes(self, bytesData):
 
         if not self.sconnect.writable():
@@ -72,6 +92,8 @@ class TCLSerialManager(object):
         self.sconnect.write(rawBytes)   
 
         return True
+
+
 
     def ReceiveMessage(self):
 
@@ -145,6 +167,8 @@ class TCLSerialManager(object):
         self.sconnect.flushInput()
         return output
 
+
+
     def SendMessageAndListen(self, instruction, args=""):
 
         output = TCLSerialOutput()
@@ -157,7 +181,11 @@ class TCLSerialManager(object):
         return output
 
 # ------------------------------------------------------------------------
-# TCLSerial CLASSES
+# TCLSerial CLASS
+
+# This processor finds the serial connection to a connected arduino device
+# and then overrides it's parent's output method to turn the color array
+# data into serial messages to the TCL device.
 
 class SoundToLightProcessor(sound2color.SoundToColorProcessor):
 
@@ -168,7 +196,6 @@ class SoundToLightProcessor(sound2color.SoundToColorProcessor):
 
         ttys = serial.tools.list_ports.comports()
 
-        # 
         for tty in ttys:
             portName = tty[0] 
             if "usbserial" not in portName:
