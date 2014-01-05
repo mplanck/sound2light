@@ -12,7 +12,7 @@ These color pulses are added on top of each other to represent a 50x1 LED displa
 
 Here it is in action:
 
-<iframe width="853" height="480" src="//www.youtube-nocookie.com/embed/OuHVeVGlFm0?rel=0" frameborder="0" allowfullscreen></iframe>
+http://youtu.be/OuHVeVGlFm0
 
 <p>
 This project tutorial assumes the user knows how to setup, compile and install Arduino firmware, has a familiarity with Mac OS (installing python modules and soundflower) and has a familiarity with python.
@@ -82,9 +82,9 @@ If all python modules are up to date, you can make sound2light.py executable and
 
 The 50 LEDs should turn from blue to green indicating that a handshake is made, and then the lights will go dark.  The sound2light script will then be sniffing for any audio coming through your computer speakers and using some simple beat detection, start sending color data to your light array.
 
-Here's a video of it in action:
+Here's a video of it in action (while listening to one of my favorite soundtracks from HBO's Band of Brothers):
 
-<iframe width="853" height="480" src="//www.youtube-nocookie.com/embed/WYXbA07cIvQ?list=PLglW061yc38NzTpgAaUoSCpULON8Hp_bE" frameborder="0" allowfullscreen></iframe>
+http://youtu.be/WYXbA07cIvQ
 
 <pre>The original github for this project: https://github.com/mplanck/sound2light</pre>
 
