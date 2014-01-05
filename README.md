@@ -18,7 +18,7 @@ This project tutorial assumes the user knows how to setup, compile and install A
 
 ## Some online references I used to put this together
 
-* Where to get the arduino IDE and learning firmware: <a href="http://http://www.arduino.cc/" target="_blank">http://http://www.arduino.cc/</a>
+* Where to get the arduino IDE and learning firmware: <a href="http://www.arduino.cc/" target="_blank">http://www.arduino.cc/</a>
 
 * Great resource for using the TCL library and the TCL shield: <a href="http://www.idolstarastronomer.com/Home/char-total_control_lighting" target="_blank">http://www.idolstarastronomer.com/Home/char-total_control_lighting</a>
 
