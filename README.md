@@ -4,13 +4,16 @@
 
 Turn any sound flowing through my Mac into a colorful light display using the "Cool Neon" Total Control Lighting strip. 
 
-Here it is in action:  http://youtu.be/OuHVeVGlFm0
+Here it is in action:  
+
+<a href="http://youtu.be/OuHVeVGlFm0" target="_blank">http://youtu.be/OuHVeVGlFm0</a>
+<a href="http://youtu.be/OX0XfJmJ88M" target="_blank">http://youtu.be/OX0XfJmJ88M</a>
 
 ## The nerd-tastic description: 
 
 Using soundflower to sniff audio flowing through my Mac, a python script processes this audio using pyo to find beats at different frequencies.  The python script turns the beat at each frequency into a pulse that travels from the center of the 50 LED array.  Each pulse is colored differently based on the frequency it represents.  
 
-These color pulses are added on top of each other to represent a 50x1 LED display.  Each color is only 3 bytes (256 possible colors per red green and blue).  This colored array is then messaged via serial to an arduino.  The arduino has firmware that then turns those serial messages into SPI messages which it sends to the controllers of a 50 LED Total Control Lighting strip.  Unfortunately, I am limited to only 50 LEDs and a 30 fps refresh rate considering the slow baud rate of serial.  A future version of this tech should use the ftdi bit bang approach so we can get a lot more bits through the usb to arduino connection: <a href="http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/">http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/</a>
+These color pulses are added on top of each other to represent a 50x1 LED display.  Each color is only 3 bytes (256 possible colors per red green and blue).  This colored array is then messaged via serial to an arduino.  The arduino has firmware that then turns those serial messages into SPI messages which it sends to the controllers of a 50 LED Total Control Lighting strip.  Unfortunately, I am limited to only 50 LEDs and a 30 fps refresh rate considering the slow baud rate of serial.  A future version of this tech should use the ftdi bit bang approach so we can get a lot more bits through the usb to arduino connection: <a href="http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/" target="_blank">http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/</a>
 
 <p>
 This project is a crude prototype and could use A LOT of work to make it something polished.  My hope is that it would be something I have on my desk at work.  I often listen to music on my headphones so I don't disturb others, but I thought it would be neat if people could "see" what I'm listening too using this cool tech from coolneon.  Then again, these LED lights can be pretty bright, so I just may be trading noise pollution for light pollution.  We'll see what my co-workers think.
