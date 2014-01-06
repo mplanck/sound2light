@@ -113,7 +113,7 @@ def aquablueramp(val):
 class SoundToColorProcessor(object):
 
     NUM_FREQUENCY_BANDS = 16
-    NUM_AVERAGE_SAMPLES = 80
+    NUM_AVERAGE_SAMPLES = 40
 
     def __init__(self):
 
