@@ -84,24 +84,36 @@ def aquablueramp(val):
 # can be pushed out to a light display by implementing output().
 
 # Key functions:
+
 #   start(outputAudio=True or False) :
 #     Called to start the audio server as well as create audio signal processing
 #     objects that can be used in update.
 #     If outputAudio is set to True, then we pipe the input audio to the output
-#     speakers of the current computer.
+#     speakers of the current computer.  This usually defaults to false since
+#     soundflower can be responsible for piping to the right output.
 #
+
 #   shutdown( ):
 #     Called to properly close down the audio server.  Can be inherited to add
 #     additional objects to shutdown.  Shutdown should be called in a try:finally
 #     block.
 
-#   update( ):
+#   update( ): <-- can override to change how audio is processed
 #     Called at each time step to update the internal color array state based on
 #     the state of the audio server.  update is where the beat detection happen.
+#
+
+#   output( ): <-- can override to output to more than just text to the terminal
+#      Called at each time step to push the colorarray data to a meaningful output
+#      The default implementation prints to the terminal.  You can see that in
+#      sound2light, there is an output function in the subclass
+#      SoundToLightProcessor that extends output() to send serial messages to the
+#      arduino
+
 class SoundToColorProcessor(object):
 
     NUM_FREQUENCY_BANDS = 16
-    NUM_AVERAGE_SAMPLES = 60
+    NUM_AVERAGE_SAMPLES = 80
 
     def __init__(self):
 
@@ -124,7 +136,7 @@ class SoundToColorProcessor(object):
 
         # This is the pyo sound server that will be grabbing color from the 
         # soundflower input.
-        self.server = Server(sr=44100, nchnls=2,buffersize=1024)
+        self.server = Server(sr=44100, nchnls=2, buffersize=1024)
 
         self.inputDeviceIdx = -1;
         self.outputDeviceIdx = -1;
@@ -146,7 +158,8 @@ class SoundToColorProcessor(object):
         self.server.setInputDevice(self.inputDeviceIdx)
         self.server.setOutputDevice(self.outputDeviceIdx)
 
-        self.server.boot()    
+        self.server.boot()
+        self.starttime = time.time()
 
         # This is the color ramp function that we will use to process the sound
         # beats into color based on pitch.
@@ -170,8 +183,8 @@ class SoundToColorProcessor(object):
         self.rightbands = BandSplit(self.rightinput, 
             num=SoundToColorProcessor.NUM_FREQUENCY_BANDS, min=20, max=18000)
 
-        self.leftinstamp = Average( Follower( self.leftbands ), size=512 )
-        self.rightinstamp = Average( Follower( self.rightbands ), size=512 )
+        self.leftinstamp = Average( Follower( self.leftbands ), size=1024 )
+        self.rightinstamp = Average( Follower( self.rightbands ), size=1024 )
 
         self.energysamples = numpy.ndarray([SoundToColorProcessor.NUM_FREQUENCY_BANDS,
             SoundToColorProcessor.NUM_AVERAGE_SAMPLES])
@@ -210,15 +223,13 @@ class SoundToColorProcessor(object):
         # if the sound is so soft, then don't consider it worth
         # processing.
         if numpy.max(energyavgs) < .00001:
-
             return
 
         variances = self.energysamples - energyavgs.reshape((energyavgs.shape[0],1))
         variances *= variances;
 
         Vs = numpy.average(variances, axis=1)        
-        # 
-        Cs = -100000. * Vs + 1.5
+        Cs = -1000000. * Vs + 1.5
 
         currtime = time.time()
         for i in range(energyinsts.shape[0]):
@@ -231,18 +242,34 @@ class SoundToColorProcessor(object):
 
     def _addBeat(self, power, pitch):
 
-        # shift another beat onto the stack.
+        # shift another beat onto the queue
         self.beatwave = numpy.roll(self.beatwave, 1, axis=0)
 
         self.beatwave[0][0] = 0.;
         self.beatwave[0][1] = power/100.;
         self.beatwave[0][2] = pitch
 
+    def _updateColorRamp(self):
+        elapsed = time.time() - self.starttime;
+
+        reltime = elapsed%120
+        if reltime <= 30:
+            self.colorramp = fireramp
+        elif reltime > 30 and reltime <= 60:
+            self.colorramp = aquablueramp
+        elif reltime > 60 and reltime <= 90:
+            self.colorramp = redtoblueramp
+        elif reltime > 90 and reltime <= 120:
+            self.colorramp = rgbramp
+
     def update(self):
+
         # Called during every frame color update to find beats across all 
         # frequencies.  This will update the self.colorarray internal member
         # data which stores the values of the 50 colors we play to push out 
         # to the TLC controller
+
+        self._updateColorRamp()
         self._processBeat()
 
         maxbeatpower = 0.;
@@ -253,7 +280,7 @@ class SoundToColorProcessor(object):
                 amp = self.beatstored[i]
                 self.beatstored[i] = 0.
 
-            beatpower = smoothremap(amp, 1., 1.6, 0., 100.)
+            beatpower = smoothremap(amp, 1., 1.5, 0., 100.)
  
             self._addBeat(beatpower, i)
 
@@ -277,7 +304,7 @@ class SoundToColorProcessor(object):
                 bluecolors = numpy.zeros(50)
 
                 # Have the beats travel from the center out to the left and right
-                # we mirror the beatcolors
+                # in a mirrored way
                 redcolors[25 + beatpos] = beatcolor[0]
                 redcolors[24 - beatpos] = beatcolor[0]
 
@@ -288,14 +315,17 @@ class SoundToColorProcessor(object):
                 bluecolors[24 - beatpos] = beatcolor[2]
 
                 # Spread the travelling beat across 3 color leds using a convolve
-                ckernel = 2. * (1./float(SoundToColorProcessor.NUM_FREQUENCY_BANDS)) * numpy.array([1., 1., 1.])
+                ckernel = 3. * (1./float(SoundToColorProcessor.NUM_FREQUENCY_BANDS)) * numpy.array([1., 1., 1.])
 
                 self.colorarray.transpose()[0] += numpy.convolve(redcolors, ckernel, mode="same")
                 self.colorarray.transpose()[1] += numpy.convolve(greencolors, ckernel, mode="same")
                 self.colorarray.transpose()[2] += numpy.convolve(bluecolors, ckernel, mode="same")              
 
-                self.beatwave[i][0] = clamp(self.beatwave[i][0] + 2. * self.beatwave[i][1], 0, 24)
-                self.beatwave[i][1] = max(0., self.beatwave[i][1] - .04 * self.beatwave[i][1] - .01);
+                # update the beatwave position with the velocity/power of the beat
+                # slow down the power of the beat at every update using a "drag" plus
+                # plus a small constant
+                self.beatwave[i][0] = clamp(self.beatwave[i][0] + 3. * self.beatwave[i][1], 0, 24)
+                self.beatwave[i][1] = max(0., self.beatwave[i][1] - .08 * self.beatwave[i][1] - .01);
 
     def _getColorPair(self, idx):
 
@@ -311,10 +341,10 @@ class SoundToColorProcessor(object):
 
         return coloridx
 
-    def output(self):        
+    def output(self):       
 
-        # The function to override to process the self.colorarray into a 
-        # meaningful output for the TLC hardware.
+        ramptxt = "Color Ramp Name: %s" % self.colorramp.func_name
+        self.stdscr.addstr(0, 0, ramptxt) 
 
         for pitchIdx in range(self.perpitcharray.shape[0]):
             coloridx = self._getColorPair(pitchIdx)
@@ -335,7 +365,7 @@ class SoundToColorProcessor(object):
                     ascii += "@"
 
             ascii += " |\n"
-            self.stdscr.addstr(pitchIdx,0,ascii, curses.color_pair(coloridx))
+            self.stdscr.addstr(pitchIdx+1,0,ascii, curses.color_pair(coloridx))
 
         self.stdscr.refresh()
 
