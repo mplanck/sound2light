@@ -84,5 +84,42 @@ Here's a video of it in action (while listening to one of my favorite soundtrack
 
 http://youtu.be/WYXbA07cIvQ
 
+The startup sequence for sound2light.py should look something like this:
+
+<pre>
+[HQ:git-repos/sound2light/python] mplanck% ./sound2light.py
+pyo version 0.6.8 (uses single precision)
+Testing usbserial port [ /dev/cu.usbserial-AH00ZL7N ]
+
+
+
+
+
+
+
+tcl:ready
+Using serial port [ /dev/cu.usbserial-AH00ZL7N ]
+Success! -> sound2light
+Handshake Confirmed!
+Handshake Made With:  sound2light
+
+0       | *O----*-------@*-@*---@----@---*@-*@-------*----O |
+1       | *O------*------*-*----@*--*@----*-*------*------O |
+2       | *O--------*-----@0-@----------@-0@-----*--------O |
+3       | *O-O-O------@---@------*@@*------@---@------O-O-O |                                                           
+4       | -*O-0-----*O@----@---@------@---@----@O*-----0-O* |
+5       | -----O-O--@-@----@---@--@@--@---@----@-@--O-O---- |
+6       | ---------*@*@-@-@-----@O@@O@-----@-@-@*@*-------- |
+7       | ------------@-@0@------O--O------@0@-@----------- |
+8       | ------------@-@-@----------------@-@-@----------- |
+9       | ------------@-@-@----------------@-@-@----------- |
+10      | ------------@-@-@----------------@-@-@----------- |
+11      | *------O-O--@------0-0------0-0------@--O-O------ |
+12      | **-*-O-O----------------------------------O-O-*-* |
+13      | *O----O-O--------------------------------O-O----O |
+14      | *O--------*-*------------------------*-*--------O |
+15      | *O----------**----------------------**----------O |                                                                      
+</pre>
+
 <pre>The original github for this project: https://github.com/mplanck/sound2light</pre>
 
