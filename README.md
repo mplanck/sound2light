@@ -10,23 +10,11 @@ Here it is in action:  http://youtu.be/OuHVeVGlFm0
 
 Using soundflower to sniff audio flowing through my Mac, a python script processes this audio using pyo to find beats at different frequencies.  The python script turns the beat at each frequency into a pulse that travels from the center of the 50 LED array.  Each pulse is colored differently based on the frequency it represents.  
 
-These color pulses are added on top of each other to represent a 50x1 LED display.  Each color is only 3 bytes (256 possible colors per red green and blue).  This colored array is then messaged via serial to an arduino.  The arduino has firmware that then turns those serial messages into SPI messages which it sends to the controllers of a 50 LED Total Control Lighting strip.  Unfortunately, I am limited to only 50 LEDs and a 30 fps refresh rate considering the slow baud rate of serial.  A future version of this tech should use the ftdi bit bang approach so we can get a lot more bits through usb to arduino connection: <a href="http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/">http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/</a>
+These color pulses are added on top of each other to represent a 50x1 LED display.  Each color is only 3 bytes (256 possible colors per red green and blue).  This colored array is then messaged via serial to an arduino.  The arduino has firmware that then turns those serial messages into SPI messages which it sends to the controllers of a 50 LED Total Control Lighting strip.  Unfortunately, I am limited to only 50 LEDs and a 30 fps refresh rate considering the slow baud rate of serial.  A future version of this tech should use the ftdi bit bang approach so we can get a lot more bits through the usb to arduino connection: <a href="http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/">http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/</a>
 
 <p>
 This project tutorial assumes the user knows how to setup, compile and install Arduino firmware, has a familiarity with Mac OS (installing python modules and soundflower) and has a familiarity with python.
 </p>
-
-## Some online references I used to put this together
-
-* Where to get the arduino IDE and learning firmware: <a href="http://www.arduino.cc/" target="_blank">http://www.arduino.cc/</a>
-
-* Great resource for using the TCL library and the TCL shield: <a href="http://www.idolstarastronomer.com/Home/char-total_control_lighting" target="_blank">http://www.idolstarastronomer.com/Home/char-total_control_lighting</a>
-
-* Where to get TCL lighting strips: <a href="http://www.coolneon.com/" target="_blank">http://www.coolneon.com/</a>
-
-* Numpy reference: <a href="http://docs.scipy.org/doc/numpy/reference/" target="_blank">http://docs.scipy.org/doc/numpy/reference/</a>
-
-* Pyo reference: <a href="http://docs.scipy.org/doc/numpy/reference/" target="_blank">http://docs.scipy.org/doc/numpy/reference/</a>
 
 ## First the Ingredients
 
@@ -68,7 +56,7 @@ This project tutorial assumes the user knows how to setup, compile and install A
 
 ## Putting it together
 
-We are assuming by this point that you've installed all of the appropriate Arduino IDE, USB drivers, have your Total Control Lighting strip connected to your Arduino via the Total Control Lighting developer shield and have all of the python modules mentioned above.
+We are assuming by this point that you've installed all of the appropriate Arduino IDE, USB drivers, have your Total Control Lighting strip connected to your Arduino via the Total Control Lighting developer shield, have soundflower installed and setup so that your mac is piping to soundflower as its output (refer to this very handy tutorial from sylvan advantage: <a href="http://www.sylvanadvantage.com/index.php/support/how-tos/65-3rd-party-applications-info/188-how-to-use-sound-flower" target="_blank">http://www.sylvanadvantage.com/index.php/support/how-tos/65-3rd-party-applications-info/188-how-to-use-sound-flower</a> ) and have all of the python modules mentioned above.
 
 1. You'll need to download all of the code provided in both the *arduino* and *python* directories.
 2. In the *arduino* folder, you'll find a *libraries* folder that contains a list of arduino libraries that you'll need to install in your Arduino IDE.
@@ -120,6 +108,21 @@ Handshake Made With:  sound2light
 14      | *O--------*-*------------------------*-*--------O |
 15      | *O----------**----------------------**----------O |                                                                      
 </pre>
+
+
+## Some online references I used to put this together
+
+* Where to get the arduino IDE and learning firmware: <a href="http://www.arduino.cc/" target="_blank">http://www.arduino.cc/</a>
+
+* Great resource for using the TCL library and the TCL shield: <a href="http://www.idolstarastronomer.com/Home/char-total_control_lighting" target="_blank">http://www.idolstarastronomer.com/Home/char-total_control_lighting</a>
+
+* Where to get TCL lighting strips: <a href="http://www.coolneon.com/" target="_blank">http://www.coolneon.com/</a>
+
+* Numpy reference: <a href="http://docs.scipy.org/doc/numpy/reference/" target="_blank">http://docs.scipy.org/doc/numpy/reference/</a>
+
+* Pyo reference: <a href="https://code.google.com/p/pyo/" target="_blank">https://code.google.com/p/pyo/</a>
+
+* Soundflower reference: <a href="http://www.sylvanadvantage.com/index.php/support/how-tos/65-3rd-party-applications-info/188-how-to-use-sound-flower" target="_blank">http://www.sylvanadvantage.com/index.php/support/how-tos/65-3rd-party-applications-info/188-how-to-use-sound-flower</a> 
 
 <pre>The original github for this project: https://github.com/mplanck/sound2light</pre>
 
