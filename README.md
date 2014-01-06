@@ -7,6 +7,7 @@ Turn any sound flowing through my Mac into a colorful light display using the "C
 Here it is in action:  
 
 <a href="http://youtu.be/OuHVeVGlFm0" target="_blank">http://youtu.be/OuHVeVGlFm0</a>
+
 <a href="http://youtu.be/OX0XfJmJ88M" target="_blank">http://youtu.be/OX0XfJmJ88M</a>
 
 ## The nerd-tastic description: 
