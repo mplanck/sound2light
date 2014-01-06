@@ -2,7 +2,7 @@
 
 ## The short and sweet:
 
-Turn any sound flowing through my Mac into a colorful light display using the "Cool Neon" Total Control Lighting strip.
+Turn any sound flowing through my Mac into a colorful light display using the "Cool Neon" Total Control Lighting strip. 
 
 Here it is in action:  http://youtu.be/OuHVeVGlFm0
 
@@ -11,6 +11,10 @@ Here it is in action:  http://youtu.be/OuHVeVGlFm0
 Using soundflower to sniff audio flowing through my Mac, a python script processes this audio using pyo to find beats at different frequencies.  The python script turns the beat at each frequency into a pulse that travels from the center of the 50 LED array.  Each pulse is colored differently based on the frequency it represents.  
 
 These color pulses are added on top of each other to represent a 50x1 LED display.  Each color is only 3 bytes (256 possible colors per red green and blue).  This colored array is then messaged via serial to an arduino.  The arduino has firmware that then turns those serial messages into SPI messages which it sends to the controllers of a 50 LED Total Control Lighting strip.  Unfortunately, I am limited to only 50 LEDs and a 30 fps refresh rate considering the slow baud rate of serial.  A future version of this tech should use the ftdi bit bang approach so we can get a lot more bits through the usb to arduino connection: <a href="http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/">http://hackaday.com/2009/09/22/introduction-to-ftdi-bitbang-mode/</a>
+
+<p>
+This project is a crude prototype and could use A LOT of work to make it something polished.  My hope is that it would be something I have on my desk at work.  I often listen to music on my headphones so I don't disturb others, but I thought it would be neat if people could "see" what I'm listening too using this cool tech from coolneon.  Then again, these LED lights can be pretty bright, so I just may be trading noise pollution for light pollution.  We'll see what my co-workers think.
+</p>
 
 <p>
 This project tutorial assumes the user knows how to setup, compile and install Arduino firmware, has a familiarity with Mac OS (installing python modules and soundflower) and has a familiarity with python.
@@ -66,7 +70,7 @@ We are assuming by this point that you've installed all of the appropriate Ardui
 
 If all python modules are up to date, you can make sound2light.py executable and sound2color.py readable.  sound2light.py imports sound2color.py so make sure that they are sibling files on your mac.  When you execute sound2light.py, it should try to find a live USB serial connection to your arduino.  If it does, it will signal to the arduino of its intent to start streaming color packets.  
 
-The 50 LEDs should turn from blue to green indicating that a handshake is made, and then the lights will go dark.  The sound2light script will then be sniffing for any audio coming through your computer speakers and using some simple beat detection, start sending color data to your light array.
+6. The 50 LEDs should turn from blue to green indicating that a handshake is made, and then the lights will go dark.  The sound2light script will then be sniffing for any audio coming through your computer speakers and using some simple beat detection, start sending color data to your light array.  
 
 Here's a video of it in action (while listening to one of my favorite soundtracks from HBO's Band of Brothers):
 
@@ -91,6 +95,7 @@ Success! -> sound2light
 Handshake Confirmed!
 Handshake Made With:  sound2light
 
+Color Ramp Name: redtoblueramp
 0       | *O----*-------@*-@*---@----@---*@-*@-------*----O |
 1       | *O------*------*-*----@*--*@----*-*------*------O |
 2       | *O--------*-----@0-@----------@-0@-----*--------O |
@@ -109,6 +114,29 @@ Handshake Made With:  sound2light
 15      | *O----------**----------------------**----------O |                                                                      
 </pre>
 
+## What's going on in the audio processing?
+
+I decided that I wanted the lights to "do something cool" whenever there was a beat in any audio playing through the speakers.  I could have done something much simpler where I just had the lights display the magnitude of an amplitude envelope.  In fact, that may be a future alternate script that I'll add to this project.
+
+So I began with this very helpful article on how to find beat's in audio: <a href="http://archive.gamedev.net/archive/reference/programming/features/beatdetection/index.html" target="_blank">http://archive.gamedev.net/archive/reference/programming/features/beatdetection/index.html</a>
+
+I massaged a lot of the suggested numbers as well as avoided working in decibels (which admittedly could have been a mistake) as there are still a lot of songs that give unpredictable results with this approach.
+
+The overall idea is that I keep a running average of the amplitude of each frequency band for a period of time.  If there is a spike in the amplitude of the audio in which that spike exceeds a certain percentage of the average, then I consider that a beat.  In the cases where I'm listening to audio that has variance, I soften the threshold at which I determine something is a beat directly proportional to the amount of variance.
+
+So when I do find a "beat" that exceeds a spike threshold, I mark the power of the beat by how much it exceeds that threshold.  For every beat detected at one of 16 evenly distributed frequencies (within the range of 20 hz to 18000 hz), the "intensity" or "impulse" of the beat is recorded as a "beat wave". 
+
+## What's a beat wave?
+
+The "beat wave" contains 3 meaningful numbers as its data - the current position of the wave (a float ranging from 0 to 24), the current velocity/power of the wave (a float ranging from 0 to 1), and the pitch/frequency band the beat wave represents (an integer ranging from 0 to 15).  When the beat wave is translated into color across 50 virtual lights, the position of the beat wave maps to a position on the array of colors as if the wave was eminating from the center of the 50 colors and then spreads out in a mirrored fashion towards the ends.  All beat waves start with position=0, and will begin their journey as a color at the center of the 50 color array, and when a beat has position=24, it will map to color on both the right and left ends of the array.  The velocity/power of each beat wave determines how fast that beat is travelling from the center of the 50 color array to the extremes as well as the intensity of the color to be displayed.  The pitch/frequency band index (0 -> 15) that the beat wave represents will be used to determine the base color that the wave will be turned into when placed on the 50 color array.  There is a linear 4 color gradient ramp that determines how the pitch index is turned into a color.  Every 30 seconds of the script, a new linear gradient ramp is selected and the script cycles through 4 presets - fire, aquablue, redtoblue, rgb.  You can easily add your own or modify the existing ramps by changing the code in sound2color.py ( search for fireramp ).
+
+During each time step of the script (30 every second), beats are detected across the 16 frequency bands and added to a queue of beat waves (the script can have up to 300 beat waves at any given time and "old" beat waves are ejected to make room for .  All beat waves are turned into color on the 50 color array based on position, power and pitch as described above.  Then, each beat wave's position and velocity are updated.  The position is incremented by the simple formula p = v * dt where dt is arbitrarily chosen based on the selected ranges of position and velocity.  The velocity of each beat wave is updated so that it decreases by a percentage with each time step (like air drag), using the simple formula v = v - k * v * dt - c * dt, where k << 1 and c is a small constant (dt in this case is absorbed into k and c in my code and k*dt and c*dt are chosen arbitrarily for effect).
+
+## sound2color and sound2light?
+
+All of the logic above lives in the sound2color.py module so it tends to be the work horse of this setup.
+
+sound2light.py implements the simple bit of taking this 50 color array and sending it as a compact packet of 50x3 bytes via serial to my attached arduino.  The firmware on the arduino then turns the byte data into SPI signals that lights up my 50 LED string of lights.
 
 ## Some online references I used to put this together
 
@@ -123,6 +151,8 @@ Handshake Made With:  sound2light
 * Pyo reference: <a href="https://code.google.com/p/pyo/" target="_blank">https://code.google.com/p/pyo/</a>
 
 * Soundflower reference: <a href="http://www.sylvanadvantage.com/index.php/support/how-tos/65-3rd-party-applications-info/188-how-to-use-sound-flower" target="_blank">http://www.sylvanadvantage.com/index.php/support/how-tos/65-3rd-party-applications-info/188-how-to-use-sound-flower</a> 
+
+* A handy break down of how to implement a crude beat detection: <a href="http://archive.gamedev.net/archive/reference/programming/features/beatdetection/index.html" target="_blank">http://archive.gamedev.net/archive/reference/programming/features/beatdetection/index.html</a>
 
 <pre>The original github for this project: https://github.com/mplanck/sound2light</pre>
 
